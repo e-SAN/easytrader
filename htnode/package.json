@@ -1,0 +1,18 @@
+{
+  "name": "nodeTrader",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "coffee ./lib/test.coffee" 
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "address": "^1.0.0",
+    "async": "^1.5.0",
+    "ocr-by-image-url": "0.0.1",
+    "request": "^2.67.0"
+  }
+}

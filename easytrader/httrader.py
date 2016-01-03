@@ -77,7 +77,8 @@ class HTTrader(WebTrader):
         """获取并识别返回的验证码
         :return:失败返回 False 成功返回 验证码"""
         # 获取验证码
-        verify_code_response = self.s.get(self.config['verify_code_api'], data=dict(ran=random.random()))
+        verify_code_response = self.s.get(self.config['verify_code_api'], \
+            data=dict(ran=random.random()))
         # 保存验证码
         image_path = os.path.join(os.getcwd(), 'vcode')
         with open(image_path, 'wb') as f:
