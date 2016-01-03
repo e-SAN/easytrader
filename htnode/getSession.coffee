@@ -21,15 +21,15 @@ async.parallel obj, (err,results)->
     options =
       userType: 'jy'
       loginEvent:1
-      trdpwdEns: '196605'
+      trdpwdEns: ''
       macaddr:'60:33:4B:09:BF:0F'
       hddInfo: "#{hddInfo}"
       lipInfo: "#{ip}"
       topath: null
       accountType: 1
-      userName: '080300007199'
-      servicePwd: '19660522'
-      trdpwd: '196605'
+      userName: ''
+      servicePwd: ''
+      trdpwd: ''
       vcode: "#{vcode.trim()}"
 
     #request.post url+'&'+text, (err, data)-> console.log data unless err
