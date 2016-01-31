@@ -1,20 +1,22 @@
 # easytrader
 
 * 进行简单的 web 股票交易
+* 实现自动登录
+* 支持命令行调用，方便其他语言适配
 * 有兴趣的可以加群 `429011814` 一起讨论
 
 **开发环境** : `Ubuntu 15.10` / `Python 3.4`
 
-### TODO
+### 相关
+[获取新浪免费实时行情的类库: easyquotation](https://github.com/shidenggui/easyquotation)
 
-* 支持更多券商
-* 实现自动登录
-* 优化速度
+[简单的股票量化交易框架 使用 easytrader 和 easyquotation](https://github.com/shidenggui/easyquant)
 
 ### 支持券商
 
 * 佣金宝
-* 华泰（支持自动登录）
+* 华泰
+* 银河 (感谢 [ruyiqf](https://github.com/ruyiqf) 的贡献)
 
 ### requirements
 
@@ -22,7 +24,7 @@
  
 > pip install -r requirements.txt
 
-> 华泰的自动登录需要安装以下二者之一： 
+> 华泰 / 佣金宝 的自动登录需要安装以下二者之一： 
 
 * `JAVA` : 推荐, 识别率高，安装简单, 需要命令行下 `java -version` 可用 (感谢空中园的贡献)
 * `tesseract` : 保证在命令行下 `tesseract` 可用
@@ -44,35 +46,31 @@ user = easytrader.use('yjb') # 佣金宝支持 ['yjb', 'YJB', '佣金宝']
 ```
 
 ##### 华泰
+
 ```python
 user = easytrader.use('ht') # 华泰支持 ['ht', 'HT', '华泰']
 ```
-
-#### 登录
-
-##### 佣金宝
-```python
-user.token = 'ABC...CBA'
-```
-[如何获取 token, 即文章中的 `JSESSIONID`](http://www.jisilu.cn/question/42707)
-
-##### 华泰
+##### 银河 
 
 ```python
-user.read_config('me.json')
+user = easytrader.use('yh') # 银河支持 ['yh', 'YH', '银河']
 ```
 
-**注**: 华泰需要配置 `me.json` 填入相关信息, `trdpwd` 加密后的密码首次需要登录后查看登录 `POST` 的 `trdpwd` 值确定
-
-[如何获取 `trdpwd`, 可参考此文章](http://www.jisilu.cn/question/42707)
-
-#### 自动登录 
-
-##### 华泰
+##### 自动登录
 
 ```python
-user.autologin()
+user.prepare('ht.json') // 或者 yjb.json || yh.json 
 ```
+
+**注**: 
+
+* 华泰需要配置 `ht.json` 填入相关信息, `trdpwd` 加密后的密码首次需要登录后查看登录 `POST` 的 `trdpwd` 值确定
+* 佣金宝需要配置 `yjb.json` 并填入相关信息, 其中的 `password` 为加密后的 `password`
+* 银河需要配置 `yh.json` 填入相关信息, `trdpwd` 加密后的密码首次需要登录后查看登录 `POST` 的 `trdpwd` 值确定, 以及登录`POST`请求里面的`hardinfo`字段 
+
+
+[如何获取配置所需信息, 可参考此文章](http://www.jisilu.cn/question/42707)
+
 ### 交易相关
 以下用法以佣金宝为例，华泰类似
 
@@ -128,7 +126,7 @@ user.entrust
   'entrust_bs': '买卖方向',
   'entrust_no': '委托编号',
   'entrust_price': '委托价格',
-  'entrust_status': '委托状态',  # 废单 / 已报
+  'entrust_status': '委托状态',  # 废单 / 已报
   'report_time': '申报时间',
   'stock_code': '证券代码',
   'stock_name': '证券名称'}]
@@ -167,28 +165,65 @@ user.buy('162411', price=0.55, amount=100)
 ```python
 user.sell('162411', price=0.55, amount=100)
 ```
-#### 撤单（华泰特有）
+#### 撤单
+
+##### 华泰
 
 ```python
 user.cancel_entrust('委托单号')
 ```
-
-#### 掉线(佣金宝特有)
-
-后台开了一个进程 30 秒请求一次维持 `token` 的有效性，理论上是不会掉线的。
-如果掉线了,请求会返回
+##### 佣金宝
 
 ```python
-{'error_info': '登陆已经超时，请重新登陆！', 'error_no': '-1'}
+user.cancel_entrust('委托单号', '股票代码')
+```
+##### 银河证券
+```python
+user.cancel_entrust('委托单号', '股票代码')
+```
+### 命令行模式
+
+#### 登录
+
+```
+ python cli.py --use ht --prepare ht.json 
 ```
 
-这时只需要重新设置token就可以了
+注: 此时会生成 `account.session` 文件保存生成的 `user` 对象
+
+#### 获取余额 / 持仓 / 以及其他变量
+
+```
+ python cli.py --get balance
+```
+
+#### 买卖 / 撤单
+
+```
+ python cli.py --do buy 162411 0.450 100
+```
+#### 查看帮助 
+
+```
+ python cli.py --help
+```
+
+#### Q&A
+
+##### Question 
+
+编辑完配置文件，运行后出现 `json` 解码报错的信息。类似于下面
 
 ```python
-user.token='valid token'
+raise JSONDecodeError("Expecting value", s, err.value) from None
+
+JSONDecodeError: Expecting value
 ```
 
-#### 其他
-其他可参考下面链接
+##### Answer
+请勿使用 `记事本` 编辑账户的 `json` 配置文件，推荐使用 [notepad++](https://notepad-plus-plus.org/zh/) 或者 [sublime text](http://www.sublimetext.com/)
 
-[佣金宝](http://www.jisilu.cn/question/42707)
+### 其他
+[交易接口分析以及其他开源量化相关论坛](http://www.celuetan.com) 
+
+[软件实现原理](http://www.jisilu.cn/question/42707)
